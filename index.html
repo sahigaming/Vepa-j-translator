@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VEPA J Script Translator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f4f7;
+            padding: 20px 10px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        h1 { color: #0f172a; margin-top: 0; font-size: 22px; text-align: center; margin-bottom: 20px; }
+        input {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        input:focus { border-color: #3b82f6; }
+        .script-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            background-color: #fafafa;
+            padding: 15px;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            min-height: 100px;
+        }
+        .char-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+            position: relative;
+        }
+        .symbol-svg {
+            width: 30px;
+            height: 38px;
+        }
+        .letter-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+        .space-box { width: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 VEPA J Script Translator</h1>
+    <input type="text" id="userInput" placeholder="Type text or numbers here..." value="abcdefghijklmnopqrstuvwxyz 0123456789">
+    <div class="script-container" id="output"></div>
+</div>
+
+<script>
+    const input = document.getElementById('userInput');
+    const output = document.getElementById('output');
+    const evenLetters = ['B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z'];
+
+    function translate() {
+        let text = input.value.toUpperCase();
+        let html = '';
+
+        for (let char of text) {
+            if (char === ' ') {
+                html += '<div class="space-box"></div>';
+                continue;
+            }
+
+            let hasDot = evenLetters.includes(char);
+            let dotSvg = hasDot ? '<circle cx="15" cy="4" r="2.5" fill="#0f172a" />' : '';
+            let linesSvg = '';
+
+            // --- NUMBERS LOGIC (0-9) ---
+            if (/[0-9]/.test(char)) {
+                if (char === '0') {
+                    linesSvg = '<line x1="22" y1="10" x2="8" y2="34" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>';
+                } else if (char === '1') {
+                    linesSvg = `
+                        <line x1="9" y1="14" x2="9" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="21" y1="14" x2="21" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="9" y1="22" x2="21" y2="22" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+                    `;
+                } else if (['2', '3', '4'].includes(char)) {
+                    let linesCount = parseInt(char);
+                    for (let i = 0; i < linesCount; i++) {
+                        let y = 14 + (i * i === 0 ? 0 : i * 6);
+                        linesSvg += `<line x1="4" y1="${14 + (i * 6)}" x2="26" y2="${14 + (i * 6)}" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
+                    }
+                } else {
+                    linesSvg = '<line x1="10" y1="10" x2="10" y2="34" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>';
+                    let branchesCount = parseInt(char) - 5;
+                    for (let i = 0; i < branchesCount; i++) {
+                        let y = 14 + (i * 6);
+                        linesSvg += `<line x1="10" y1="${y}" x2="24" y2="${y}" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
+                    }
+                }
+            } 
+            // --- LETTERS LOGIC (A-Z) ---
+            else if (/[A-Z]/.test(char)) {
+                switch(char) {
+                    case 'A': case 'B':
+                        linesSvg = '<path d="M 4 12 L 15 32 L 26 12" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'C': case 'D':
+                        linesSvg = '<path d="M 24 10 L 6 22 L 24 34" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'E': case 'F':
+                        linesSvg = '<path d="M 6 10 L 24 22 L 6 34" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'G': case 'H':
+                        linesSvg = '<path d="M 4 32 L 15 12 L 26 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'I': case 'J':
+                        linesSvg = '<path d="M 26 10 L 26 32 L 4 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'K': case 'L':
+                        linesSvg = '<path d="M 4 10 L 4 32 L 26 32 L 26 10" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'M': case 'N':
+                        linesSvg = '<path d="M 4 10 L 4 32 L 26 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'O': case 'P':
+                        linesSvg = '<path d="M 26 10 L 4 10 L 4 32 L 26 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'Q': case 'R':
+                        linesSvg = '<rect x="4" y="10" width="22" height="22" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'S': case 'T':
+                        linesSvg = '<path d="M 4 10 L 26 10 L 26 32 L 4 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'U': case 'V':
+                        linesSvg = '<path d="M 4 10 L 26 10 L 26 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'W': case 'X':
+                        linesSvg = '<path d="M 4 32 L 4 10 L 26 10 L 26 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                    case 'Y': case 'Z':
+                        linesSvg = '<path d="M 26 10 L 4 10 L 4 32" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'; break;
+                }
+            } else {
+                html += `<div class="char-box" style="font-size:20px; font-weight:bold; line-height:38px; width:40px; text-align:center;">${char}</div>`;
+                continue;
+            }
+
+            html += `
+            <div class="char-box">
+                <svg class="symbol-svg">${dotSvg}${linesSvg}</svg>
+                <div class="letter-label">${char}</div>
+            </div>
+            `;
+        }
+        output.innerHTML = html;
+    }
+
+    input.addEventListener('input', translate);
+    translate();
+</script>
+
+</body>
+</html>
+
+
