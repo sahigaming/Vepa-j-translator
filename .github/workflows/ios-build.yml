@@ -1,0 +1,29 @@
+name: Compile Apple iOS IPA
+on:
+  workflow_dispatch: # Triggers instantly from your phone browser
+
+jobs:
+  build_ios:
+    runs-on: macos-latest # Instructs GitHub to spin up a remote Apple computer
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v4
+
+      # Installs Capacitor/Cordova to wrap your HTML site into a native Apple container
+      - name: Initialize iOS Layer
+        run: |
+          npm install
+          npx cap add ios
+          npx cap sync ios
+
+      # Compiles the workspace using Apple's command-line Xcode engine
+      - name: Compile Native iOS App
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath ./build/App.xcarchive
+
+      - name: Upload Downloadable IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vepa-J-Translator-iOS
+          path: ./ios/App/build/App.xcarchive
