@@ -1,0 +1,33 @@
+name: Generate Windows EXE
+on:
+  workflow_dispatch: # Allows you to manually click "Run" on your iPad
+
+permissions:
+  contents: write # Grants permission to upload the file to your releases
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Compiler
+        run: npm install -g nativefier
+
+      - name: Build Application Executable
+        run: nativefier --name "Vepa J Translator" "index.html"
+
+      - name: Create Downloadable Zip
+        run: Compress-Archive -Path "Vepa J Translator-win32-x64" -DestinationPath "Vepa-J-Translator-Windows.zip"
+
+      - name: Post to Existing Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Vepa-J-Translator-Windows.zip
+          tag_name: "1.1" # Matches your current release version exactly
